@@ -1,0 +1,34 @@
+<?xml version = "1.0" encoding = "UTF-8"?>
+
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="DaoClasses.Post">
+
+    <resultMap id = "result" type = "Post">
+        <result property = "id" column = "id"/>
+        <result property = "body" column = "body"/>
+        <result property = "title" column = "title"/>
+        <result property = "userId" column = "user_id"/>
+    </resultMap>
+
+    <insert id="insert" parameterType="DaoClasses.Post">
+        INSERT INTO POSTS (ID, BODY, TITLE, USER_ID) VALUES (#{id},
+        #{body}, #{title}, #{user_id}, #{hireDate},#{salary});
+    </insert>
+
+    <delete id="deleteById" parameterType="int">
+        DELETE from POSTS WHERE ID = #{id};
+    </delete>
+
+    <select id="getAll"  resultMap = "result">
+        SELECT * FROM POSTS;
+    </select>
+
+    <select id="selectById" parameterMap="int"  resultMap = "result">
+        SELECT * FROM POSTS WHERE ID = #{id};
+    </select>
+
+    <update id="update" parameterType="DaoClasses.Post">
+        UPDATE Posts SET ID = #{id}, BODY = #{body}, TITLE = #{title}, USER_ID = #{userId} WHERE ID = #{id};
+    </update>
+</mapper>
