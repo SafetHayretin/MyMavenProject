@@ -5,13 +5,13 @@
 <web-app>
 
   <servlet>
-    <servlet-name>DemoServlet</servlet-name>
-    <servlet-class>DemoServlet</servlet-class>
+    <servlet-name>CRUD.GetPost</servlet-name>
+    <servlet-class>CRUD.GetPost</servlet-class>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>DemoServlet</servlet-name>
-    <url-pattern>/welcome</url-pattern>
+    <servlet-name>CRUD.GetPost</servlet-name>
+    <url-pattern>/posts</url-pattern>
   </servlet-mapping>
 
 </web-app>
