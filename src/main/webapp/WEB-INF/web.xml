@@ -5,13 +5,33 @@
 <web-app>
 
   <servlet>
-    <servlet-name>CRUD.GetPost</servlet-name>
-    <servlet-class>CRUD.GetPost</servlet-class>
+    <servlet-name>Servlets.PostServlet</servlet-name>
+    <servlet-class>Servlets.PostServlet</servlet-class>
+  </servlet>
+
+  <servlet>
+    <servlet-name>Servlets.CommentServlet</servlet-name>
+    <servlet-class>Servlets.CommentServlet</servlet-class>
+  </servlet>
+
+  <servlet>
+    <servlet-name>Servlets.UserServlet</servlet-name>
+    <servlet-class>Servlets.UserServlet</servlet-class>
   </servlet>
 
   <servlet-mapping>
-    <servlet-name>CRUD.GetPost</servlet-name>
+    <servlet-name>Servlets.PostServlet</servlet-name>
     <url-pattern>/posts</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>Servlets.CommentServlet</servlet-name>
+    <url-pattern>/comments</url-pattern>
+  </servlet-mapping>
+
+  <servlet-mapping>
+    <servlet-name>Servlets.UserServlet</servlet-name>
+    <url-pattern>/users</url-pattern>
   </servlet-mapping>
 
 </web-app>

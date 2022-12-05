@@ -1,26 +1,26 @@
-package Model;
+package Models;
 
 public class Post {
-    String id;
+    int id;
 
     String body;
 
     String title;
 
-    String userId;
+    int userId;
 
-    public Post(String id, String body, String title, String userId) {
+    public Post(int id, String body, String title, int userId) {
         this.id = id;
         this.body = body;
         this.title = title;
         this.userId = userId;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
@@ -40,11 +40,11 @@ public class Post {
         this.title = title;
     }
 
-    public String getUserId() {
+    public int getUserId() {
         return userId;
     }
 
-    public void setUserId(String userId) {
+    public void setUserId(int userId) {
         this.userId = userId;
     }
 }

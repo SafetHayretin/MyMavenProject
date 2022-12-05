@@ -1,6 +1,6 @@
-package CRUD;
+package Servlets;
 
-import Model.Post;
+import Models.Post;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import jakarta.servlet.http.HttpServlet;
@@ -16,22 +16,25 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.List;
 
-public class GetPost extends HttpServlet {
-    private SqlSession createSession() throws IOException {
-        Reader reader = Resources.getResourceAsReader("SqlMapConfig.xml");
-        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
-        SqlSession session = sqlSessionFactory.openSession();
-        return session;
-    }
+public class UserServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest req, HttpServletResponse resp) {
         resp.setContentType("text/html;charset=UTF-8");
     }
 
+    private SqlSession createSession() throws IOException {
+        Reader reader = Resources.getResourceAsReader("SqlMapConfig.xml");
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
+        SqlSession session = sqlSessionFactory.openSession();
+
+        return session;
+    }
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse resp) throws IOException {
-        SqlSession session = createSession();
+        List<Post> posts;
+        try (SqlSession session = createSession()) {
+            posts = session.selectList("Comments.getAll");
+        }
 
-        List<Post> posts = session.selectList("Post.getAll");
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         PrintWriter out = resp.getWriter();
