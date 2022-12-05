@@ -2,7 +2,7 @@
 
 <mapper namespace="Models.User">
 
-    <resultMap id="result" type="User">
+    <resultMap id="result" type="Models.User">
         <result property="id" column="id"/>
         <result property="name" column="name"/>
         <result property="username" column="username"/>
@@ -13,7 +13,7 @@
     </resultMap>
 
     <insert id="insert" parameterType="Models.User">
-        INSERT INTO USERS ( NAME, USERNAME, EMAIL, PHONE, WEBSITE ) VALUES ( #{name}, #{username}, #{email}, #{phone}, #{website} );
+        INSERT INTO USERS ( NAME, EMAIL, PHONE, WEBSITE ) VALUES ( #{name}, #{email}, #{phone}, #{website} );
 
         <selectKey keyProperty="id" resultType="int" order="AFTER">
             select last_insert_id() as id
@@ -28,11 +28,11 @@
         SELECT * FROM USERS;
     </select>
 
-    <select id="selectById" parameterMap="int" resultMap="result">
+    <select id="selectById" parameterType="int" resultMap="result">
         SELECT * FROM USERS WHERE ID = #{id};
     </select>
 
     <update id="update" parameterType="Models.Comment">
-        UPDATE USERS SET NAME = #{name}, USERNAME = #{username}, EMAIL = #{email}, PHONE = #{phone}, WEBSITE = #{website} WHERE ID = #{id};
+        UPDATE USERS SET NAME = #{name}, EMAIL = #{email}, PHONE = #{phone}, WEBSITE = #{website} WHERE ID = #{id};
     </update>
 </mapper>

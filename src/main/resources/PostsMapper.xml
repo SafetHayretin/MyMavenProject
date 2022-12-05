@@ -4,7 +4,7 @@
 
 <mapper namespace="Models.Post">
 
-    <resultMap id="result" type="Post">
+    <resultMap id="result" type="Models.Post">
         <result property="id" column="id"/>
         <result property="body" column="body"/>
         <result property="title" column="title"/>
@@ -23,10 +23,10 @@
     </delete>
 
     <select id="getAll" resultMap="result">
-        SELECT * FROM POSTS;
+        SELECT ID, TITLE, BODY, USER_ID FROM POSTS;
     </select>
 
-    <select id="selectById" parameterMap="int" resultMap="result">
+    <select id="selectById" parameterType="int" resultMap="result">
         SELECT * FROM POSTS WHERE ID = #{id};
     </select>
 

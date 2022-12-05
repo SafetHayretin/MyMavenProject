@@ -4,7 +4,7 @@
 
 <mapper namespace="Models.Comment">
 
-    <resultMap id="result" type="Comment">
+    <resultMap id="result" type="Models.Comment">
         <result property="id" column="id"/>
         <result property="postId" column="post_id"/>
         <result property="name" column="name"/>
@@ -14,7 +14,6 @@
 
     <insert id="insert" parameterType="Models.Comment">
         INSERT INTO COMMENTS ( POST_ID, NAME, EMAIL, BODY ) VALUES ( #{postId}, #{name}, #{email}, #{body} );
-
         <selectKey keyProperty="id" resultType="int" order="AFTER">
             select last_insert_id() as id
         </selectKey>
@@ -28,7 +27,7 @@
         SELECT * FROM COMMENTS;
     </select>
 
-    <select id="selectById" parameterMap="int" resultMap="result">
+    <select id="selectById" parameterType="int" resultMap="result">
         SELECT * FROM COMMENTS WHERE ID = #{id};
     </select>
 

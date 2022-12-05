@@ -1,26 +1,26 @@
 package Models;
 
 public class Post {
-    int id;
+    Integer id;
 
     String body;
 
     String title;
 
-    int userId;
+    Integer userId;
 
-    public Post(int id, String body, String title, int userId) {
+    public Post(Integer id, String body, String title, Integer userId) {
         this.id = id;
         this.body = body;
         this.title = title;
         this.userId = userId;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -40,11 +40,21 @@ public class Post {
         this.title = title;
     }
 
-    public int getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(int userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
+    }
+
+    @Override
+    public String toString() {
+        return "Post{" +
+                "id=" + id +
+                ", body='" + body + '\'' +
+                ", title='" + title + '\'' +
+                ", userId=" + userId +
+                '}';
     }
 }

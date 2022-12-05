@@ -24,7 +24,7 @@ public class PostServlet extends HttpServlet {
     }
 
     private SqlSession createSession() throws IOException {
-        Reader reader = Resources.getResourceAsReader("SqlMapConfig.xml");
+        Reader reader = Resources.getResourceAsReader("mybatis-config.xml");
         SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
         SqlSession session = sqlSessionFactory.openSession();
 
@@ -39,10 +39,12 @@ public class PostServlet extends HttpServlet {
         }
 
         GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
+        Gson gson = builder.setPrettyPrinting().create();
         PrintWriter out = resp.getWriter();
+
         for (Post post : posts) {
             String jsonString = gson.toJson(post);
+            System.out.println(jsonString);
             out.println(jsonString);
         }
     }
@@ -58,15 +60,16 @@ public class PostServlet extends HttpServlet {
         Gson gson = builder.create();
         Post post = gson.fromJson(req.getReader(), Post.class);
 
-        int status = session.insert("Models.Post.insert", post);
+        int id = session.insert("Models.Post.insert", post);
 
-        if (status > 0) {
-            out.print(" <p>Record saved successfully!</p> ");
+        if (id > 0) {
+            out.print("Record saved successfully! id = " + id);
             req.getRequestDispatcher("index.html").include(req, resp);
-        }
-        else {
+        } else {
             out.println("Sorry! unable to save record");
         }
+
+
         out.close();
     }
 
@@ -76,16 +79,14 @@ public class PostServlet extends HttpServlet {
 
         PrintWriter out = resp.getWriter();
 
-        int id = Integer.parseInt(req.getParameter("id"));
-        String body = req.getParameter("body");
-        String title = req.getParameter("title");
-        int userid = Integer.parseInt(req.getParameter("userId"));
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        Post post = gson.fromJson(req.getReader(), Post.class);
 
-        Post post = new Post(id, body, title, userid);
         int status = session.update("Models.Post.update", post);
 
         if (status > 0) {
-            out.print(" <p>Record saved successfully!</p> ");
+            out.print(" <p>Record updated successfully!</p> ");
         } else {
             out.println("Unable to save record");
         }
