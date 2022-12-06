@@ -11,7 +11,7 @@
         <result property="userId" column="user_id"/>
     </resultMap>
 
-    <insert id="insert" parameterType="Models.Post">
+    <insert id="insert" parameterType="Models.Post" useGeneratedKeys="true">
         INSERT INTO POSTS (BODY, TITLE, USER_ID) VALUES ( #{body}, #{title}, #{userId});
         <selectKey keyProperty="id" resultType="int" order="AFTER">
             select last_insert_id() as id

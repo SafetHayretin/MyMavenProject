@@ -12,7 +12,7 @@
         <result property="body" column="body"/>
     </resultMap>
 
-    <insert id="insert" parameterType="Models.Comment">
+    <insert id="insert" parameterType="Models.Comment" useGeneratedKeys="true">
         INSERT INTO COMMENTS ( POST_ID, NAME, EMAIL, BODY ) VALUES ( #{postId}, #{name}, #{email}, #{body} );
         <selectKey keyProperty="id" resultType="int" order="AFTER">
             select last_insert_id() as id

@@ -9,10 +9,11 @@
         <result property="email" column="email"/>
 <!--        <result property="address" column="address"/>-->
         <result property="phone" column="phone"/>
+        <result property="password" column="password"/>
         <result property="website" column="website"/>
     </resultMap>
 
-    <insert id="insert" parameterType="Models.User">
+    <insert id="insert" parameterType="Models.User" useGeneratedKeys="true">
         INSERT INTO USERS ( NAME, EMAIL, PHONE, WEBSITE ) VALUES ( #{name}, #{email}, #{phone}, #{website} );
 
         <selectKey keyProperty="id" resultType="int" order="AFTER">
@@ -26,6 +27,10 @@
 
     <select id="getAll" resultMap="result">
         SELECT * FROM USERS;
+    </select>
+
+    <select id="getCredentials" resultMap="result" parameterType="String">
+        SELECT USERNAME, PASSWORD FROM USERS WHERE USERNAME = #{USERNAME};
     </select>
 
     <select id="selectById" parameterType="int" resultMap="result">

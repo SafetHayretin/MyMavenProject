@@ -15,6 +15,8 @@ public class User {
 
     private String website;
 
+    private String password;
+
     public static class Address {
         private String street;
 
@@ -23,6 +25,14 @@ public class User {
         private String city;
 
         private String zipcode;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     public int getId() {

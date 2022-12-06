@@ -1,93 +1,112 @@
 package Servlets;
 
-import Models.Post;
+import static jakarta.servlet.http.HttpServletResponse.*;
+
+import Dao.UserDao;
 import Models.User;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.apache.ibatis.io.Resources;
-import org.apache.ibatis.session.SqlSession;
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import jakarta.servlet.http.HttpSession;
+import org.apache.commons.codec.digest.DigestUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.util.List;
 
 public class UserServlet extends HttpServlet {
-    protected void processRequest(HttpServletRequest req, HttpServletResponse resp) {
-        resp.setContentType("text/html;charset=UTF-8");
+    UserDao dao = new UserDao();
+
+    protected void processResponse(HttpServletResponse resp) {
+        resp.setContentType("application/xml;charset=UTF-8");
     }
 
-    private SqlSession createSession() throws IOException {
-        Reader reader = Resources.getResourceAsReader("mybatis-config.xml");
-        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(reader);
-        SqlSession session = sqlSessionFactory.openSession();
+    protected void checkAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        HttpSession session = request.getSession(false);
 
-        return session;
+        if (session == null) {
+            PrintWriter out = response.getWriter();
+            response.setStatus(SC_UNAUTHORIZED);
+            out.println("forbidden");
+        }
     }
 
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse resp) throws IOException {
-        List<User> users;
-        try (SqlSession session = createSession()) {
-            users = session.selectList("Models.User.getAll");
-        }
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        checkAuthentication(request, response);
+
+        processResponse(response);
+
+        List<User> users = dao.getAll();
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.setPrettyPrinting().create();
-        PrintWriter out = resp.getWriter();
+        PrintWriter out = response.getWriter();
 
         for (User user : users) {
             String jsonString = gson.toJson(user);
-            System.out.println(jsonString);
             out.println(jsonString);
         }
     }
 
     @Override
-    protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws IOException, ServletException {
-        SqlSession session = createSession();
-        processRequest(req, resp);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        checkAuthentication(request, response);
 
-        PrintWriter out = resp.getWriter();
+        processResponse(response);
+
+        PrintWriter out = response.getWriter();
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
-        User user = gson.fromJson(req.getReader(), User.class);
+        User user = gson.fromJson(request.getReader(), User.class);
+        encryptPassword(user);
 
-        int id = session.insert("Models.User.insert", user);
+        dao.insert(user);
+        int id = user.getId();
 
         if (id > 0) {
-            out.print("Record saved successfully! id = " + id);
-            req.getRequestDispatcher("index.html").include(req, resp);
+            response.setStatus(SC_CREATED);
+            String object = gson.toJson(user);
+            out.print(object);
         } else {
-            out.println("Sorry! unable to save record");
+            response.setStatus(SC_FORBIDDEN);
         }
 
         out.close();
     }
 
-    @Override
-    protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-        SqlSession session = createSession();
+    private void encryptPassword(User user) {
+        String password = user.getPassword();
+        if (password != null) {
+            String encryptedPassword = DigestUtils.sha1Hex(password);
+            user.setPassword(encryptedPassword);
+        }
+    }
 
-        PrintWriter out = resp.getWriter();
+    @Override
+    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        checkAuthentication(request, response);
+
+        processResponse(response);
+
+        PrintWriter out = response.getWriter();
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
-        User user = gson.fromJson(req.getReader(), User.class);
+        User user = gson.fromJson(request.getReader(), User.class);
+        encryptPassword(user);
 
-        int status = session.update("Models.Post.update", user);
+        int status = dao.update(user);
 
         if (status > 0) {
-            out.print(" <p>Record updated successfully!</p> ");
+            response.setStatus(SC_OK);
+            String object = gson.toJson(user);
+            out.print(object);
         } else {
-            out.println("Unable to save record");
+            response.setStatus(SC_FORBIDDEN);
         }
 
         out.close();
@@ -95,22 +114,26 @@ public class UserServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        PrintWriter out;
-        int status;
-        try (SqlSession session = createSession()) {
-            processRequest(request, response);
+        checkAuthentication(request, response);
 
-            out = response.getWriter();
+        processResponse(response);
 
-            String userId = request.getParameter("id");
-            int id = Integer.parseInt(userId);
-            status = session.delete("Models.User.deleteById", id);
-        }
+        PrintWriter out = response.getWriter();
+
+        GsonBuilder builder = new GsonBuilder();
+        Gson gson = builder.create();
+        User user = gson.fromJson(request.getReader(), User.class);
+        int postId = user.getId();
+
+        int status = dao.delete(postId);
+
 
         if (status > 0) {
-            out.print(" <p>Record deleted successfully!</p> ");
+            response.setStatus(SC_ACCEPTED);
+            String object = gson.toJson(user);
+            out.println(object);
         } else {
-            out.println("Sorry! unable to save record");
+            response.setStatus(SC_FORBIDDEN);
         }
     }
 }

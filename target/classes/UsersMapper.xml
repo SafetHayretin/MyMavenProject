@@ -9,11 +9,12 @@
         <result property="email" column="email"/>
 <!--        <result property="address" column="address"/>-->
         <result property="phone" column="phone"/>
+        <result property="password" column="password"/>
         <result property="website" column="website"/>
     </resultMap>
 
-    <insert id="insert" parameterType="Models.User">
-        INSERT INTO USERS ( NAME, USERNAME, EMAIL, PHONE, WEBSITE ) VALUES ( #{name}, #{username}, #{email}, #{phone}, #{website} );
+    <insert id="insert" parameterType="Models.User" useGeneratedKeys="true">
+        INSERT INTO USERS ( NAME, EMAIL, PHONE, WEBSITE ) VALUES ( #{name}, #{email}, #{phone}, #{website} );
 
         <selectKey keyProperty="id" resultType="int" order="AFTER">
             select last_insert_id() as id
@@ -28,11 +29,15 @@
         SELECT * FROM USERS;
     </select>
 
+    <select id="getCredentials" resultMap="result" parameterType="String">
+        SELECT USERNAME, PASSWORD FROM USERS WHERE USERNAME = #{USERNAME};
+    </select>
+
     <select id="selectById" parameterType="int" resultMap="result">
         SELECT * FROM USERS WHERE ID = #{id};
     </select>
 
     <update id="update" parameterType="Models.Comment">
-        UPDATE USERS SET NAME = #{name}, USERNAME = #{username}, EMAIL = #{email}, PHONE = #{phone}, WEBSITE = #{website} WHERE ID = #{id};
+        UPDATE USERS SET NAME = #{name}, EMAIL = #{email}, PHONE = #{phone}, WEBSITE = #{website} WHERE ID = #{id};
     </update>
 </mapper>
