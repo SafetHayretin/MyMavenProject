@@ -31,6 +31,10 @@
         SELECT * FROM COMMENTS WHERE ID = #{id};
     </select>
 
+    <select id="selectByPostId" parameterType="int" resultMap="result">
+        SELECT * FROM COMMENTS WHERE POST_ID = #{id};
+    </select>
+
     <update id="update" parameterType="Models.Comment">
         UPDATE COMMENTS SET POST_ID = #{postId}, NAME = #{name}, EMAIL = #{email}, BODY = #{body} WHERE ID = #{id};
     </update>

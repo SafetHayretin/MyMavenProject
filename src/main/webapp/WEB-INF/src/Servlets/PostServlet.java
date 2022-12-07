@@ -1,72 +1,97 @@
 package Servlets;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
-
+import Dao.CommentDao;
 import Dao.PostDao;
+import Models.Comment;
 import Models.Post;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import static jakarta.servlet.http.HttpServletResponse.*;
 
 
 public class PostServlet extends HttpServlet {
+    private static final Pattern POST_PATTERN_WITH_ID = Pattern.compile("/posts/(\\d)+");
+
+    private static final Pattern COMMENTS_PATTERN_WITH_POST_ID = Pattern.compile("/posts/(\\d)+/comments");
+
+    private static final Pattern ALL_POST_PATTERN = Pattern.compile("/posts");
+
     PostDao dao = new PostDao();
 
     protected void processResponse(HttpServletResponse resp) {
-        resp.setContentType("application/xml; charset=UTF-8");
-    }
-
-    protected void checkAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-
-        if (session == null) {
-            PrintWriter out = response.getWriter();
-            response.setStatus(SC_UNAUTHORIZED);
-            out.println("forbidden");
-        }
+        resp.setContentType("application/json; charset=UTF-8");
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        checkAuthentication(request, response);
+        PrintWriter out = response.getWriter();
 
         processResponse(response);
 
-        List<Post> posts = dao.getAll();
-
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.setPrettyPrinting().create();
-        PrintWriter out = response.getWriter();
 
-        for (Post post : posts) {
-            String jsonString = gson.toJson(post);
-            out.println(jsonString);
+        String pathInfo = request.getRequestURI();
+        Matcher matcher = POST_PATTERN_WITH_ID.matcher(pathInfo);
+        // posts/1
+        if (matcher.matches()) {
+            Integer id = Integer.valueOf(matcher.group(1));
+            Post post = dao.get(id);
+            String json = gson.toJson(post);
+            out.println(json);
+            return;
         }
+        // /posts
+        matcher = ALL_POST_PATTERN.matcher(pathInfo);
+        if (matcher.matches()) {
+            List<Post> posts = dao.getAll();
+            for (Post post : posts) {
+                String json = gson.toJson(post);
+                out.println(json);
+            }
+            return;
+        }
+
+        //posts/1/comments
+        matcher = COMMENTS_PATTERN_WITH_POST_ID.matcher(pathInfo);
+        if (matcher.matches()) {
+            CommentDao dao = new CommentDao();
+            Integer id = Integer.valueOf(matcher.group(1));
+            List<Comment> comment = dao.getByPostId(id);
+            String json = gson.toJson(comment);
+            out.println(json);
+
+            return;
+        }
+
+        response.setStatus(SC_FORBIDDEN);
+        out.println("forbidden");
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        checkAuthentication(request, response);
+        PrintWriter out = response.getWriter();
 
         processResponse(response);
-
-        PrintWriter out = response.getWriter();
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         Post post = gson.fromJson(request.getReader(), Post.class);
+
         dao.insert(post);
         int id = post.getId();
 
-        if (id > 0) {
+        if (id == 1) {
             response.setStatus(SC_CREATED);
             String object = gson.toJson(post);
             out.print(object);
@@ -79,19 +104,28 @@ public class PostServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        checkAuthentication(request, response);
-
-        processResponse(response);
+        String pathInfo = request.getRequestURI();
+        Matcher matcher = POST_PATTERN_WITH_ID.matcher(pathInfo); // posts/1
 
         PrintWriter out = response.getWriter();
+        if (!matcher.matches()) {
+            response.setStatus(SC_FORBIDDEN);
+            out.println("forbidden");
+            return;
+        }
+
+        processResponse(response);
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         Post post = gson.fromJson(request.getReader(), Post.class);
 
+        int id = Integer.parseInt(matcher.group(1));
+        post.setId(id);
+
         int status = dao.update(post);
 
-        if (status > 0) {
+        if (status == 1) {
             response.setStatus(SC_OK);
             String object = gson.toJson(post);
             out.print(object);
@@ -104,25 +138,27 @@ public class PostServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        checkAuthentication(request, response);
-
-        processResponse(response);
+        String pathInfo = request.getRequestURI();
+        Matcher matcher = POST_PATTERN_WITH_ID.matcher(pathInfo); // posts/1
 
         PrintWriter out = response.getWriter();
+        if (!matcher.matches()) {
+            response.setStatus(SC_FORBIDDEN);
+            out.println("forbidden");
+            return;
+        }
+        processResponse(response);
 
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
-        Post post = gson.fromJson(request.getReader(), Post.class);
-        int postId = post.getId();
+        Integer postId = Integer.valueOf(matcher.group(1));
 
         int status = dao.delete(postId);
 
-        if (status > 0) {
+        if (status == 1) {
             response.setStatus(SC_ACCEPTED);
-            String object = gson.toJson(post);
-            out.print(object);
+            out.println("deleted");
         } else {
             response.setStatus(SC_FORBIDDEN);
+            out.println("forbidden");
         }
     }
 }

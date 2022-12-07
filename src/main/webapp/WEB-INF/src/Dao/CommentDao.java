@@ -37,7 +37,14 @@ public class CommentDao {
         return comments;
     }
 
-    public Comment get(Integer id) {
+    public List<Comment> getByPostId(Integer id) {
+        List<Comment> comment = session.selectList("Models.Comment.selectByPostId", id);
+        session.commit();
+
+        return comment;
+    }
+
+    public Comment getById(Integer id) {
         Comment comment = session.selectOne("Models.Comment.selectById", id);
         session.commit();
 

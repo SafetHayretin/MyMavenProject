@@ -27,7 +27,7 @@
     </select>
 
     <select id="selectById" parameterType="int" resultMap="result">
-        SELECT * FROM POSTS WHERE ID = #{id};
+        SELECT ID, TITLE, BODY, USER_ID FROM POSTS WHERE ID = #{id};
     </select>
 
     <update id="update" parameterType="Models.Post">

@@ -1,62 +1,88 @@
 package Servlets;
 
-import static jakarta.servlet.http.HttpServletResponse.*;
-
 import Dao.CommentDao;
 import Models.Comment;
+import Tools.QuerySplitter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static jakarta.servlet.http.HttpServletResponse.*;
 
 public class CommentServlet extends HttpServlet {
+
+    private static final Pattern COMMENT_PATTERN_WITH_POST_ID = Pattern.compile("/comments\\?postid=(\\d)+");
+
+    private static final Pattern COMMENT_PATTERN_WITH_ID = Pattern.compile("/comments/(\\d)+");
+
+    private static final Pattern ALL_COMMENT_PATTERN = Pattern.compile("/comments");
+
     protected CommentDao dao = new CommentDao();
 
     protected void processResponse(HttpServletResponse resp) {
-        resp.setContentType("application/xml;charset=UTF-8");
-    }
-
-    protected void checkAuthentication(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        HttpSession session = request.getSession(false);
-
-        if (session == null) {
-            PrintWriter out = response.getWriter();
-            response.setStatus(SC_FORBIDDEN);
-            out.println("forbidden");
-        }
+        resp.setContentType("application/json; charset=UTF-8");
     }
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        checkAuthentication(request, response);
+        PrintWriter out = response.getWriter();
 
         processResponse(response);
 
-        List<Comment> comments = dao.getAll();
-
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.setPrettyPrinting().create();
-        PrintWriter out = response.getWriter();
 
-        for (Comment post : comments) {
-            String jsonString = gson.toJson(post);
-            out.println(jsonString);
+        String uri = request.getRequestURI();
+        String query = request.getQueryString();
+        Matcher matcher = COMMENT_PATTERN_WITH_POST_ID.matcher(uri + "?" + query);
+        // /comments?postid=1
+        if (matcher.matches()) {
+            Map<String, String> splitQuery = QuerySplitter.splitQuery(query);
+            Integer id = Integer.valueOf(splitQuery.get("postid"));
+            List<Comment> comment = dao.getByPostId(id);
+            String json = gson.toJson(comment);
+            out.println(json);
+
+            return;
         }
+        // /comments/1
+        matcher = COMMENT_PATTERN_WITH_ID.matcher(uri);
+        if (matcher.matches()) {
+            Integer id = Integer.valueOf(matcher.group(1));
+            Comment comment = dao.getById(id);
+            String jsonString = gson.toJson(comment);
+            out.println(jsonString);
+
+            return;
+        }
+        // /comments
+        matcher = ALL_COMMENT_PATTERN.matcher(uri);
+        if (matcher.matches()) {
+            List<Comment> comments = dao.getAll();
+            String jsonString = gson.toJson(comments);
+            out.println(jsonString);
+
+            return;
+        }
+
+        response.setStatus(SC_FORBIDDEN);
+        out.println("forbidden");
     }
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        checkAuthentication(request, response);
+        PrintWriter out = response.getWriter();
 
         processResponse(response);
-
-        PrintWriter out = response.getWriter();
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
@@ -65,7 +91,7 @@ public class CommentServlet extends HttpServlet {
         dao.insert(comment);
         int id = comment.getId();
 
-        if (id > 0) {
+        if (id == 1) {
             response.setStatus(SC_CREATED);
             String object = gson.toJson(comment);
             out.print(object);
@@ -78,19 +104,28 @@ public class CommentServlet extends HttpServlet {
 
     @Override
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        checkAuthentication(request, response);
-
-        processResponse(response);
+        String pathInfo = request.getRequestURI();
+        Matcher matcher = COMMENT_PATTERN_WITH_ID.matcher(pathInfo); // comments/1
 
         PrintWriter out = response.getWriter();
+        if (!matcher.matches()) {
+            response.setStatus(SC_FORBIDDEN);
+            out.println("forbidden");
+            return;
+        }
+
+        processResponse(response);
 
         GsonBuilder builder = new GsonBuilder();
         Gson gson = builder.create();
         Comment comment = gson.fromJson(request.getReader(), Comment.class);
 
+        int id = Integer.parseInt(matcher.group(1));
+        comment.setId(id);
+
         int status = dao.update(comment);
 
-        if (status > 0) {
+        if (status == 1) {
             response.setStatus(SC_OK);
             String object = gson.toJson(comment);
             out.print(object);
@@ -103,26 +138,27 @@ public class CommentServlet extends HttpServlet {
 
     @Override
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        checkAuthentication(request, response);
-
-        processResponse(response);
+        String pathInfo = request.getRequestURI();
+        Matcher matcher = COMMENT_PATTERN_WITH_ID.matcher(pathInfo);
 
         PrintWriter out = response.getWriter();
+        if (!matcher.matches()) {
+            response.setStatus(SC_FORBIDDEN);
+            out.println("forbidden");
+            return;
+        }
+        processResponse(response);
 
-        GsonBuilder builder = new GsonBuilder();
-        Gson gson = builder.create();
-        Comment comment = gson.fromJson(request.getReader(), Comment.class);
+        Integer id = Integer.valueOf(matcher.group(1));
 
-        int id = comment.getId();
         int status = dao.delete(id);
 
-        if (status > 0) {
+        if (status == 1) {
             response.setStatus(SC_ACCEPTED);
-            String object = gson.toJson(comment);
-            out.println(object);
+            out.println("updated");
         } else {
             response.setStatus(SC_FORBIDDEN);
-            out.println("Unable to save record");
+            out.println("forbidden");
         }
     }
 }

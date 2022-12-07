@@ -11,10 +11,11 @@
         <result property="phone" column="phone"/>
         <result property="password" column="password"/>
         <result property="website" column="website"/>
+        <result property="salt" column="salt"/>
     </resultMap>
 
     <insert id="insert" parameterType="Models.User" useGeneratedKeys="true">
-        INSERT INTO USERS ( NAME, EMAIL, PHONE, WEBSITE ) VALUES ( #{name}, #{email}, #{phone}, #{website} );
+        INSERT INTO USERS ( NAME, USERNAME, EMAIL, PHONE, WEBSITE, PASSWORD, SALT ) VALUES ( #{name}, #{username}, #{email}, #{phone}, #{website}, #{password}, #{salt} );
 
         <selectKey keyProperty="id" resultType="int" order="AFTER">
             select last_insert_id() as id
@@ -30,7 +31,7 @@
     </select>
 
     <select id="getCredentials" resultMap="result" parameterType="String">
-        SELECT USERNAME, PASSWORD FROM USERS WHERE USERNAME = #{USERNAME};
+        SELECT USERNAME, PASSWORD, SALT FROM USERS WHERE USERNAME = #{USERNAME};
     </select>
 
     <select id="selectById" parameterType="int" resultMap="result">
@@ -40,4 +41,5 @@
     <update id="update" parameterType="Models.Comment">
         UPDATE USERS SET NAME = #{name}, EMAIL = #{email}, PHONE = #{phone}, WEBSITE = #{website} WHERE ID = #{id};
     </update>
+
 </mapper>

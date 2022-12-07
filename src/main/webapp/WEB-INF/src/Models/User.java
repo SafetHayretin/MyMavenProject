@@ -9,13 +9,15 @@ public class User {
 
     private String email;
 
-    private Address address;
-
     private String phone;
 
     private String website;
 
     private String password;
+
+    private int salt;
+
+    private Address address;
 
     public static class Address {
         private String street;
@@ -25,6 +27,14 @@ public class User {
         private String city;
 
         private String zipcode;
+    }
+
+    public int getSalt() {
+        return salt;
+    }
+
+    public void setSalt(int salt) {
+        this.salt = salt;
     }
 
     public String getPassword() {
