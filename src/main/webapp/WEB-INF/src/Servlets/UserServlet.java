@@ -8,6 +8,8 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -19,6 +21,7 @@ import java.util.regex.Pattern;
 import static jakarta.servlet.http.HttpServletResponse.*;
 
 public class UserServlet extends HttpServlet {
+    private static final Logger LOGGER = LogManager.getLogger(UserServlet.class.getName());
     private static final Pattern USER_PATTERN_WITH_ID = Pattern.compile("/users/(\\d)+");
 
     private static final Pattern ALL_USER_PATTERN = Pattern.compile("/users");
@@ -71,6 +74,7 @@ public class UserServlet extends HttpServlet {
         if (!request.getRequestURI().equals("/users/register")) {
             response.setStatus(SC_FORBIDDEN);
             out.println("forbidden");
+            LOGGER.error("Incorrect URL");
             return;
         }
 
@@ -91,6 +95,7 @@ public class UserServlet extends HttpServlet {
             out.print(object);
         } else {
             response.setStatus(SC_FORBIDDEN);
+            LOGGER.error("Unable to register");
         }
 
         out.close();
@@ -114,6 +119,7 @@ public class UserServlet extends HttpServlet {
         if (!matcher.matches()) {
             response.setStatus(SC_FORBIDDEN);
             out.println("forbidden");
+            LOGGER.error("Incorrect URL");
             return;
         }
 
@@ -135,6 +141,7 @@ public class UserServlet extends HttpServlet {
             out.print(object);
         } else {
             response.setStatus(SC_FORBIDDEN);
+            LOGGER.error("Unable to update user");
         }
 
         out.close();
@@ -162,6 +169,7 @@ public class UserServlet extends HttpServlet {
             out.println("deleted");
         } else {
             response.setStatus(SC_FORBIDDEN);
+            LOGGER.error("Unable to delete user");
         }
     }
 }

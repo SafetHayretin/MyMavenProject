@@ -9,6 +9,8 @@ import com.google.gson.GsonBuilder;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -20,6 +22,8 @@ import static jakarta.servlet.http.HttpServletResponse.*;
 
 
 public class PostServlet extends HttpServlet {
+    private static final Logger LOGGER = LogManager.getLogger(PostServlet.class.getName());
+
     private static final Pattern POST_PATTERN_WITH_ID = Pattern.compile("/posts/(\\d)+");
 
     private static final Pattern COMMENTS_PATTERN_WITH_POST_ID = Pattern.compile("/posts/(\\d)+/comments");
@@ -76,6 +80,7 @@ public class PostServlet extends HttpServlet {
 
         response.setStatus(SC_FORBIDDEN);
         out.println("forbidden");
+        LOGGER.error("Unable to get post");
     }
 
     @Override
@@ -97,6 +102,7 @@ public class PostServlet extends HttpServlet {
             out.print(object);
         } else {
             response.setStatus(SC_FORBIDDEN);
+            LOGGER.error("Unable to add post");
         }
 
         out.close();
@@ -131,6 +137,7 @@ public class PostServlet extends HttpServlet {
             out.print(object);
         } else {
             response.setStatus(SC_FORBIDDEN);
+            LOGGER.error("Unable to update post");
         }
 
         out.close();
@@ -145,6 +152,7 @@ public class PostServlet extends HttpServlet {
         if (!matcher.matches()) {
             response.setStatus(SC_FORBIDDEN);
             out.println("forbidden");
+            LOGGER.error("Incorrect URL");
             return;
         }
         processResponse(response);
@@ -159,6 +167,7 @@ public class PostServlet extends HttpServlet {
         } else {
             response.setStatus(SC_FORBIDDEN);
             out.println("forbidden");
+            LOGGER.error("Unable to delete post");
         }
     }
 }
