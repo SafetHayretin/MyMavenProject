@@ -18,6 +18,7 @@ import java.io.PrintWriter;
 import java.sql.Date;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Random;
 
 @MultipartConfig
 public class LoginServlet extends HttpServlet {
@@ -73,7 +74,8 @@ public class LoginServlet extends HttpServlet {
     private Token createToken(User user) {
         int userid = user.getId();
         Token token = new Token();
-
+        String randNumberToken = DigestUtils.sha1Hex(generateRandomNumber() + "");
+        token.setToken(randNumberToken);
         token.setUserId(userid);
         Date date = new Date(System.currentTimeMillis());
         LocalDate monthLate = date.toLocalDate().plusMonths(1);
@@ -84,6 +86,11 @@ public class LoginServlet extends HttpServlet {
 
         tokenDao.insert(token);
         return token;
+    }
+
+    private int generateRandomNumber() {
+        Random rand = new Random();
+        return rand.nextInt(0, 10000);
     }
 
     private Token getToken(List<Token> tokens, int userId) {
