@@ -1,5 +1,6 @@
 package Dao;
 
+import Models.Post;
 import Models.Token;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -8,6 +9,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.sql.Date;
 import java.util.List;
 
 public class TokenDao {
@@ -30,21 +32,36 @@ public class TokenDao {
         return session;
     }
 
-    public List<Token> getAll() {
-        List<Token> tokens = session.selectList("Models.Token.getAll");
-        session.commit();
-
-        return tokens;
-    }
-
     public int insert(Token token) {
         int id = session.insert("Models.Token.insert", token);
         session.commit();
 
         return id;
     }
-    public Integer delete(Integer id) {
-        int status = session.delete("Models.Token.deleteById", id);
+
+    public Token getToken(int userid) {
+        Token token = session.selectOne("Models.Token.getByUserId", userid);
+        session.commit();
+
+        return token;
+    }
+
+    public Token getToken(String tokenValue) {
+        Token token = session.selectOne("Models.Token.getByToken", tokenValue);
+        session.commit();
+
+        return token;
+    }
+
+    public List<Token> getExpiredTokens(Date currentDate) {
+        List<Token> tokens = session.selectList("Models.Token.getExpiredTokens", currentDate);
+        session.commit();
+
+        return tokens;
+    }
+
+    public Integer delete(String token) {
+        int status = session.delete("Models.Token.delete", token);
         session.commit();
 
         return status;

@@ -6,10 +6,13 @@ import Models.Token;
 import Models.User;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.MultipartConfig;
-import jakarta.servlet.http.*;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
 import org.apache.commons.codec.digest.DigestUtils;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +20,6 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Random;
 
 @MultipartConfig
@@ -27,12 +29,8 @@ public class LoginServlet extends HttpServlet {
 
     TokenDao tokenDao = new TokenDao();
 
-    List<Token> tokens;
-
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-
-
         Part username = request.getPart("name");
         Part password = request.getPart("password");
 
@@ -48,13 +46,11 @@ public class LoginServlet extends HttpServlet {
             return;
         }
 
-
         int salt = user.getSalt();
         String encryptedPassword = DigestUtils.sha1Hex(passwordStr + salt);
 
         if (encryptedPassword.equals(user.getPassword())) {
-            tokens = tokenDao.getAll();
-            Token token = getToken(tokens, user.getId());
+            Token token = tokenDao.getToken(user.getId());
 
             if (token == null) {
                 token = createToken(user);
@@ -62,7 +58,7 @@ public class LoginServlet extends HttpServlet {
 
             response.setContentType("application/json");
             response.setCharacterEncoding("UTF-8");
-            out.println("Authorization: " + token);
+            response.addHeader("Authorization", "Bearer " + token.getToken());
             out.println("Welcome " + usernameStr);
         } else {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
@@ -72,11 +68,14 @@ public class LoginServlet extends HttpServlet {
     }
 
     private Token createToken(User user) {
-        int userid = user.getId();
         Token token = new Token();
+
         String randNumberToken = DigestUtils.sha1Hex(generateRandomNumber() + "");
         token.setToken(randNumberToken);
+
+        int userid = user.getId();
         token.setUserId(userid);
+
         Date date = new Date(System.currentTimeMillis());
         LocalDate monthLate = date.toLocalDate().plusMonths(1);
         Date expireDate = Date.valueOf(monthLate);
@@ -90,14 +89,7 @@ public class LoginServlet extends HttpServlet {
 
     private int generateRandomNumber() {
         Random rand = new Random();
-        return rand.nextInt(0, 10000);
-    }
 
-    private Token getToken(List<Token> tokens, int userId) {
-        for (Token token : tokens) {
-            if (token.getUserId() == userId)
-                return token;
-        }
-        return null;
+        return rand.nextInt(0, Integer.MAX_VALUE);
     }
 }

@@ -18,5 +18,6 @@
         <mapper resource="PostsMapper.xml"/>
         <mapper resource="CommentsMapper.xml"/>
         <mapper resource="UsersMapper.xml"/>
+        <mapper resource="TokenMapper.xml"/>
     </mappers>
 </configuration>

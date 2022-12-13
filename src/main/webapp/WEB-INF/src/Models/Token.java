@@ -3,7 +3,6 @@ package Models;
 import java.sql.Date;
 
 public class Token {
-    int id;
     String token;
 
     int userId;
@@ -18,14 +17,6 @@ public class Token {
 
     public void setToken(String token) {
         this.token = token;
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
     }
 
     public int getUserId() {

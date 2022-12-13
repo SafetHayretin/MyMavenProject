@@ -10,11 +10,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
 
 
 public class LoginFilter implements Filter {
-    private TokenDao dao = new TokenDao();
+    private final TokenDao dao = new TokenDao();
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
@@ -22,35 +21,34 @@ public class LoginFilter implements Filter {
     }
 
     protected boolean isAuthenticated(HttpServletRequest request) {
-        List<Token> tokens = dao.getAll();
-        String token = request.getHeader("Authorization");
-        return isTokenAvailable(tokens, token);
+        String tokenHeader = request.getHeader("Authorization");
+
+        if (tokenHeader == null)
+            return false;
+
+        String[] values = tokenHeader.split(" ");
+        String tokenValue = values[1];
+        Token token = dao.getToken(tokenValue);
+
+        return token != null;
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse resp = (HttpServletResponse) response;
+        String path = req.getPathInfo();
 
-        PrintWriter out = resp.getWriter();
-
-        if (isAuthenticated(req)) {
-            System.out.println("authorized");
+        if (isAuthenticated(req) || path.startsWith("/login")) {
             filterChain.doFilter(request, response);
-        } else {
-            System.out.println("unauthorized");
-            resp.setStatus(SC_FORBIDDEN);
-            out.println("forbidden");
+            return;
         }
+
+        HttpServletResponse resp = (HttpServletResponse) response;
+        PrintWriter out = resp.getWriter();
+        resp.setStatus(SC_FORBIDDEN);
+        out.println("forbidden");
     }
 
-    private boolean isTokenAvailable(List<Token> tokens, String tokenValue) {
-        for (Token token : tokens) {
-            if (token.getToken().equals(tokenValue))
-                return true;
-        }
-        return false;
-    }
 
     @Override
     public void destroy() {

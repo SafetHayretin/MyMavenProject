@@ -6,19 +6,20 @@ import Models.Token;
 import java.sql.Date;
 
 import java.util.List;
+import java.util.TimerTask;
 
-public class TokenChecker implements Runnable{
+public class TokenChecker extends TimerTask {
     private final TokenDao dao = new TokenDao();
 
     private List<Token> tokens;
 
     @Override
     public void run() {
-        tokens = dao.getAll();
         Date currentDate = new java.sql.Date(System.currentTimeMillis());
+        tokens = dao.getExpiredTokens(currentDate);
+
         for (Token token : tokens) {
-            if (currentDate.compareTo(token.getExpirationDate()) > 0)
-                dao.delete(token.getId());
+            dao.delete(token.getToken());
         }
     }
 }
