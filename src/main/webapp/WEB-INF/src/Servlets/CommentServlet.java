@@ -2,12 +2,14 @@ package Servlets;
 
 import Dao.CommentDao;
 import Models.Comment;
+
 import Tools.QuerySplitter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
+import http.*;
+//import jakarta.servlet.http.*;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 

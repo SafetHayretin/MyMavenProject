@@ -8,6 +8,7 @@
             Listener.BackgroundJobManager
         </listener-class>
     </listener>
+
     <servlet>
         <servlet-name>post</servlet-name>
         <servlet-class>Servlets.PostServlet</servlet-class>
@@ -31,6 +32,7 @@
         <filter-name>login</filter-name>
         <filter-class>Filters.LoginFilter</filter-class>
     </filter>
+
     <filter>
         <filter-name>logger</filter-name>
         <filter-class>Filters.LoggerFilter</filter-class>

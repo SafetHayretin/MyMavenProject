@@ -1,6 +1,5 @@
 package Dao;
 
-import Models.Post;
 import Models.Token;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
@@ -9,8 +8,7 @@ import org.apache.ibatis.session.SqlSessionFactoryBuilder;
 
 import java.io.IOException;
 import java.io.Reader;
-import java.sql.Date;
-import java.util.List;
+import java.util.Date;
 
 public class TokenDao {
     SqlSession session;
@@ -53,8 +51,8 @@ public class TokenDao {
         return token;
     }
 
-    public List<Token> getExpiredTokens(Date currentDate) {
-        List<Token> tokens = session.selectList("Models.Token.getExpiredTokens", currentDate);
+    public Integer deleteExpiredTokens(Date currentDate) {
+        Integer tokens = session.delete("Models.Token.getExpiredTokens", currentDate);
         session.commit();
 
         return tokens;

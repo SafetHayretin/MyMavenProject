@@ -23,8 +23,8 @@
         SELECT from TOKENS WHERE TOKEN = #{token};
     </select>
 
-    <select id="getExpiredTokens" parameterType="Date" resultMap="result">
-        SELECT from TOKENS WHERE EXPIRATION_DATE &lt; #{currentDate};
+    <select id="getExpiredTokens" parameterType="Date">
+        DELETE from TOKENS WHERE EXPIRATION_DATE &lt; #{currentDate};
     </select>
 
     <delete id="delete" parameterType="String">

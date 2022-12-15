@@ -5,25 +5,29 @@
 <mapper namespace="Models.Token">
 
     <resultMap id="result" type="Models.Token">
-        <result property="id" column="id"/>
         <result property="token" column="token"/>
         <result property="userId" column="user_id"/>
         <result property="createdDate" column="created_date"/>
         <result property="expirationDate" column="expiration_date"/>
     </resultMap>
 
-    <insert id="insert" parameterType="Models.Token" useGeneratedKeys="true">
-        INSERT INTO TOKENS ( TOKEN, USER_ID, CREATED_DATE, EXPIRATION_DATE ) VALUES ( #{token}, #{userId}, #{createdDate}, #{expirationDate} );
-        <selectKey keyProperty="id" resultType="int" order="AFTER">
-            select last_insert_id() as id
-        </selectKey>
+    <insert id="insert" parameterType="Models.Token">
+        INSERT INTO TOKENS ( TOKEN, USER_ID, CREATED_DATE, EXPIRATION_DATE ) VALUES ( #{token}, #{userId}, #{createdDate}, #{expirationDate});
     </insert>
 
-    <delete id="deleteById" parameterType="int">
-        DELETE from TOKENS WHERE ID = #{id};
-    </delete>
-
-    <select id="getAll" resultMap="result">
-        SELECT * FROM TOKENS;
+    <select id="getByUserId" parameterType="int">
+        SELECT from TOKENS WHERE USER_ID = #{userId};
     </select>
+
+    <select id="getByToken" parameterType="String">
+        SELECT from TOKENS WHERE TOKEN = #{token};
+    </select>
+
+    <select id="getExpiredTokens" parameterType="Date">
+        DELETE from TOKENS WHERE EXPIRATION_DATE &lt; #{currentDate};
+    </select>
+
+    <delete id="delete" parameterType="String">
+        DELETE from TOKENS WHERE TOKEN = #{token};
+    </delete>
 </mapper>

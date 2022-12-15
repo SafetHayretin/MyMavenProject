@@ -36,7 +36,7 @@ public class LoginFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
-        String path = req.getPathInfo();
+        String path = req.getRequestURI();
 
         if (isAuthenticated(req) || path.startsWith("/login")) {
             filterChain.doFilter(request, response);
