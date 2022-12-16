@@ -45,9 +45,10 @@ public class PostServlet extends HttpServlet {
 
         String pathInfo = request.getRequestURI();
         Matcher matcher = POST_PATTERN_WITH_ID.matcher(pathInfo);
+        String[] slpit = pathInfo.split("/");
         // posts/1
         if (matcher.matches()) {
-            Integer id = Integer.valueOf(matcher.group(1));
+            Integer id = Integer.valueOf(slpit[2]);
             Post post = dao.get(id);
             String json = gson.toJson(post);
             out.println(json);
@@ -68,7 +69,7 @@ public class PostServlet extends HttpServlet {
         matcher = COMMENTS_PATTERN_WITH_POST_ID.matcher(pathInfo);
         if (matcher.matches()) {
             CommentDao dao = new CommentDao();
-            Integer id = Integer.valueOf(matcher.group(1));
+            Integer id = Integer.valueOf(slpit[2]);
             List<Comment> comment = dao.getByPostId(id);
             String json = gson.toJson(comment);
             out.println(json);

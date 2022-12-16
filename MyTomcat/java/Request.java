@@ -78,7 +78,11 @@ public class Request implements HttpServletRequest {
 
     @Override
     public String getQueryString() {
-        return null;
+        String[] spl = path.split("\\?");
+        if (spl.length > 1)
+            return spl[1];
+
+        return spl[0];
     }
 
     @Override
@@ -88,7 +92,8 @@ public class Request implements HttpServletRequest {
 
     @Override
     public String getRequestURI() {
-        return path;
+        String[] spl = path.split("\\?");
+        return spl[0];
     }
 
     @Override

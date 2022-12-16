@@ -12,11 +12,7 @@ import java.util.Map;
 public class Servlets {
     private static final Map<String, HttpServlet> servlets = new HashMap<>();
 
-    public static void main(String[] args) throws Exception {
-        init();
-    }
-
-    public static void init() throws Exception {
+    public void init() throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
         Document doc = builder.parse(new File("src/main/webapp/WEB-INF/web.xml"));
@@ -27,10 +23,7 @@ public class Servlets {
         for (Map.Entry<String,String> entry : servlet.entrySet()) {
             String key = entry.getKey();
             String clazz = servlet.get(key);
-            System.out.println(clazz);
-            clazz.replaceAll("\\.", "/");
-            String url = mapping.get(key);
-            System.out.println(url);
+            String url = putDot(mapping.get(key));
             Class<?> newInst = Class.forName(clazz);
             HttpServlet obj;
             try {
@@ -41,10 +34,9 @@ public class Servlets {
 
             servlets.put(url, obj);
         }
-        System.out.println(servlets);
     }
 
-    private static Map<String, String> getElements(Document doc, String name, String val2) {
+    private Map<String, String> getElements(Document doc, String name, String val2) {
         NodeList items = doc.getElementsByTagName(name);
 
         Map<String, String> servletMap = new HashMap<>();
@@ -57,5 +49,13 @@ public class Servlets {
         }
 
         return servletMap;
+    }
+
+    private static String putDot(String url) {
+        return url.replace("/*", ".*");
+    }
+
+    public static Map<String, HttpServlet> getServlets() {
+        return servlets;
     }
 }

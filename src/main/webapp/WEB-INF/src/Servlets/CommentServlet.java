@@ -56,13 +56,13 @@ public class CommentServlet extends HttpServlet {
             List<Comment> comment = dao.getByPostId(id);
             String json = gson.toJson(comment);
             out.println(json);
-
             return;
         }
+        String[] slpit = uri.split("/");
         // /comments/1
         matcher = COMMENT_PATTERN_WITH_ID.matcher(uri);
         if (matcher.matches()) {
-            Integer id = Integer.valueOf(matcher.group(1));
+            Integer id = Integer.valueOf(slpit[2]);
             Comment comment = dao.getById(id);
             String jsonString = gson.toJson(comment);
             out.println(jsonString);

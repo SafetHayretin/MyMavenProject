@@ -1,13 +1,12 @@
+import Servlets.PostServlet;
 import http.HttpServlet;
 import http.HttpServletRequest;
-import Servlets.PostServlet;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.URL;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -16,7 +15,7 @@ import java.util.regex.Pattern;
 public class HttpTask implements Runnable {
     private final Socket socket;
 
-    private final Map<String, HttpServlet> servlets = new HashMap<>();
+    private final Map<String, HttpServlet> servlets = Servlets.getServlets();
 
     public HttpTask(Socket socket) {
         this.socket = socket;
@@ -26,15 +25,16 @@ public class HttpTask implements Runnable {
     public void run() {
         try (InputStream inputStream = socket.getInputStream();
              OutputStream outputStream = socket.getOutputStream()) {
-            servlets.put("/posts/.*", new PostServlet());
-
             Request request = new Request(inputStream);
             Response response = new Response(outputStream);
 
             HttpServlet servlet = dispatchRequest(request);
 
+            if (servlet == null) {
+                outputStream.write(getErrorMessage().getBytes());
+                return;
+            }
             servlet.service(request, response);
-            System.out.println(response.responseHeaders());
 
             outputStream.write(response.responseHeaders().getBytes());
 
@@ -51,8 +51,8 @@ public class HttpTask implements Runnable {
         }
     }
 
-    public HttpServlet dispatchRequest(HttpServletRequest request) {
-        for (Map.Entry<String,HttpServlet> entry : servlets.entrySet()) {
+    private HttpServlet dispatchRequest(HttpServletRequest request) {
+        for (Map.Entry<String, HttpServlet> entry : servlets.entrySet()) {
             String key = entry.getKey();
             Pattern pattern = Pattern.compile(key);
             Matcher matcher = pattern.matcher(request.getRequestURI());
@@ -60,5 +60,15 @@ public class HttpTask implements Runnable {
                 return entry.getValue();
         }
         return null;
+    }
+
+    private String getErrorMessage() {
+        return "HTTP/1.1 404 Not Found\n" +
+                "Date: "+ new Date()+"\n" +
+                "Content-Type: text/html\n\n"+"" +
+                "<div class=\"error-message\">\n" +
+                "    <h2>Error:</h2>\n" +
+                "    <p>Sorry, something went wrong. Please try again later.</p>\n" +
+                "</div>";
     }
 }
