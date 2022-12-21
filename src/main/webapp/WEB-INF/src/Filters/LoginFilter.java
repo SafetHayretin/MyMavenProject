@@ -2,43 +2,53 @@ package Filters;
 
 import static jakarta.servlet.http.HttpServletResponse.SC_FORBIDDEN;
 
+import Dao.TokenDao;
+import Models.Token;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 
 
 public class LoginFilter implements Filter {
+    private final TokenDao dao = new TokenDao();
+
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         Filter.super.init(filterConfig);
     }
 
     protected boolean isAuthenticated(HttpServletRequest request) {
-        HttpSession session = request.getSession(false);
+        String tokenHeader = request.getHeader("Authorization");
 
-        return session != null;
+        if (tokenHeader == null)
+            return false;
+
+        String[] values = tokenHeader.split(" ");
+        String tokenValue = values[1];
+        Token token = dao.getToken(tokenValue);
+
+        return token != null;
     }
 
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest req = (HttpServletRequest) request;
-        HttpServletResponse resp = (HttpServletResponse) response;
+        String path = req.getRequestURI();
 
-        PrintWriter out = resp.getWriter();
-
-        if(isAuthenticated(req)){
-            System.out.println("authorized");
-           filterChain.doFilter(request, response);
-        } else {
-            System.out.println("unauthorized");
-            resp.setStatus(SC_FORBIDDEN);
-            out.println("forbidden");
+        if (isAuthenticated(req) || path.startsWith("/login")) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        HttpServletResponse resp = (HttpServletResponse) response;
+        PrintWriter out = resp.getWriter();
+        resp.setStatus(SC_FORBIDDEN);
+        out.println("forbidden");
     }
+
 
     @Override
     public void destroy() {

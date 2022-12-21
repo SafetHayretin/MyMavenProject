@@ -3,6 +3,12 @@
         "http://java.sun.com/dtd/web-app_2_3.dtd" >
 
 <web-app>
+    <listener>
+        <listener-class>
+            Listener.BackgroundJobManager
+        </listener-class>
+    </listener>
+
     <servlet>
         <servlet-name>post</servlet-name>
         <servlet-class>Servlets.PostServlet</servlet-class>
@@ -14,6 +20,11 @@
     </servlet>
 
     <servlet>
+        <servlet-name>static</servlet-name>
+        <servlet-class>Servlets.StaticContentServlet</servlet-class>
+    </servlet>
+
+    <servlet>
         <servlet-name>comment</servlet-name>
         <servlet-class>Servlets.CommentServlet</servlet-class>
     </servlet>
@@ -22,24 +33,38 @@
         <servlet-name>user</servlet-name>
         <servlet-class>Servlets.UserServlet</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>staticContent</servlet-name>
+        <servlet-class>Servlets.StaticContentServlet</servlet-class>
+        <init-param>
+            <param-name>contentPath</param-name>
+            <param-value>src/main/webapp/static</param-value>
+        </init-param>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>staticContent</servlet-name>
+        <url-pattern>/static/*</url-pattern>
+    </servlet-mapping>
+
     <filter>
         <filter-name>login</filter-name>
         <filter-class>Filters.LoginFilter</filter-class>
     </filter>
 
-    <filter-mapping>
-        <filter-name>login</filter-name>
-        <url-pattern>/posts/*</url-pattern>
-    </filter-mapping>
+    <filter>
+        <filter-name>logger</filter-name>
+        <filter-class>Filters.LoggerFilter</filter-class>
+    </filter>
 
     <filter-mapping>
         <filter-name>login</filter-name>
-        <url-pattern>/comments/*</url-pattern>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
 
     <filter-mapping>
-        <filter-name>login</filter-name>
-        <url-pattern>/users/*</url-pattern>
+        <filter-name>logger</filter-name>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
 
     <servlet-mapping>

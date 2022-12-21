@@ -2,12 +2,16 @@ package Servlets;
 
 import Dao.CommentDao;
 import Models.Comment;
+
 import Tools.QuerySplitter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import jakarta.servlet.http.HttpServlet;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+
+import http.*;
+//import jakarta.servlet.http.*;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -19,6 +23,7 @@ import java.util.regex.Pattern;
 import static jakarta.servlet.http.HttpServletResponse.*;
 
 public class CommentServlet extends HttpServlet {
+    private static final Logger LOGGER = LogManager.getLogger(CommentServlet.class.getName());
 
     private static final Pattern COMMENT_PATTERN_WITH_POST_ID = Pattern.compile("/comments\\?postid=(\\d)+");
 
@@ -51,13 +56,13 @@ public class CommentServlet extends HttpServlet {
             List<Comment> comment = dao.getByPostId(id);
             String json = gson.toJson(comment);
             out.println(json);
-
             return;
         }
+        String[] slpit = uri.split("/");
         // /comments/1
         matcher = COMMENT_PATTERN_WITH_ID.matcher(uri);
         if (matcher.matches()) {
-            Integer id = Integer.valueOf(matcher.group(1));
+            Integer id = Integer.valueOf(slpit[2]);
             Comment comment = dao.getById(id);
             String jsonString = gson.toJson(comment);
             out.println(jsonString);
@@ -75,7 +80,7 @@ public class CommentServlet extends HttpServlet {
         }
 
         response.setStatus(SC_FORBIDDEN);
-        out.println("forbidden");
+        LOGGER.error("Forbidden");
     }
 
     @Override
@@ -97,6 +102,7 @@ public class CommentServlet extends HttpServlet {
             out.print(object);
         } else {
             response.setStatus(SC_FORBIDDEN);
+            LOGGER.error("Forbidden");
         }
 
         out.close();
@@ -111,6 +117,7 @@ public class CommentServlet extends HttpServlet {
         if (!matcher.matches()) {
             response.setStatus(SC_FORBIDDEN);
             out.println("forbidden");
+            LOGGER.error("Forbidden");
             return;
         }
 
@@ -159,6 +166,7 @@ public class CommentServlet extends HttpServlet {
         } else {
             response.setStatus(SC_FORBIDDEN);
             out.println("forbidden");
+            LOGGER.error("Forbidden");
         }
     }
 }

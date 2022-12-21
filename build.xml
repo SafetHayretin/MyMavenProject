@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<project name="MyProject" default="compile">
+    <property name="tomcat" value="C:\Users\Safet\Desktop\apache-tomcat-10.0.27"/>
+    <property name="tomcat.deployment" value="${tomcat}/webapps"/>
+
+    <property name="base" value="."/>
+    <property name="lib" value="build/MyMavenProject/WEB-INF/lib"/>
+
+    <target name="clean">
+        <delete dir="build"/>
+    </target>
+
+    <target name="make-dir">
+        <mkdir dir="build"/>
+        <mkdir dir="${lib}"/>
+        <mkdir dir="build/classes"/>
+        <mkdir dir="build/jar"/>
+    </target>
+
+    <target name="compile" depends="clean, make-dir, libs">
+        <javac srcdir="src" destdir="build/classes" includeantruntime="false" debug="true">
+            <classpath>
+                <pathelement location="${lib}/gson-2.10.jar"/>
+                <pathelement location="${lib}/mybatis.jar"/>
+                <pathelement location="${lib}/jakarta.servlet-api-5.0.0.jar"/>
+                <pathelement location="${lib}/mariadb-java-client-3.0.4.jar"/>
+                <pathelement location="${lib}/log4j-1.2.17.jar"/>
+                <pathelement location="${lib}/commons-cli-1.3.1.jar"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="jar" depends="compile">
+        <jar destfile="build/jar/MyProject.jar" basedir="build/classes"/>
+    </target>
+
+    <target name="libs">
+        <get src="https://repo1.maven.org/maven2/log4j/log4j/1.2.17/log4j-1.2.17.jar"
+             dest="${lib}/log4j-1.2.17.jar"/>
+        <get src="https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/3.0.4/mariadb-java-client-3.0.4.jar"
+             dest="${lib}/mariadb-java-client-3.0.4.jar"/>
+        <get src="https://repo1.maven.org/maven2/com/google/code/gson/gson/2.10/gson-2.10.jar"
+             dest="${lib}/gson-2.10.jar"/>
+        <get src="https://repo1.maven.org/maven2/jakarta/servlet/jakarta.servlet-api/5.0.0/jakarta.servlet-api-5.0.0.jar"
+             dest="${lib}/jakarta.servlet-api-5.0.0.jar"/>
+        <get src="https://repo1.maven.org/maven2/org/mybatis/mybatis/3.5.11/mybatis-3.5.11.jar"
+             dest="${lib}/mybatis.jar"/>
+        <get src="https://repo1.maven.org/maven2/commons-cli/commons-cli/1.3.1/commons-cli-1.3.1.jar"
+             dest="${lib}/commons-cli-1.3.1.jar"/>
+    </target>
+
+    <target name="war" depends="jar">
+        <zip destfile="build/war/MyProject.war">
+            <zipfileset dir="webapp/WEB-INF" includes="web.xml" prefix="WEB-INF"/>
+            <zipfileset dir="build/jar" prefix="WEB-INF"/>
+            <zipfileset dir="lib" prefix="WEB-INF/lib"/>
+        </zip>
+    </target>
+
+    <target name="deploy" depends="war">
+        <copy file="${base}/MyProject.war" todir="${tomcat.deployment}"/>
+    </target>
+
+    <target name="undeploy">
+        <delete file="${tomcat.deployment}/MyProject.war"/>
+    </target>
+</project>

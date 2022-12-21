@@ -31,7 +31,7 @@
     </select>
 
     <select id="getCredentials" resultMap="result" parameterType="String">
-        SELECT USERNAME, PASSWORD, SALT FROM USERS WHERE USERNAME = #{USERNAME};
+        SELECT ID, USERNAME, PASSWORD, SALT FROM USERS WHERE USERNAME = #{USERNAME};
     </select>
 
     <select id="selectById" parameterType="int" resultMap="result">
