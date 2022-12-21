@@ -1,5 +1,7 @@
 import http.HttpServletResponse;
 
+import java.awt.font.OpenType;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -9,17 +11,19 @@ import java.util.Map;
 public class Response implements HttpServletResponse {
     StringBuilder headerBuilder = new StringBuilder();
 
-    PrintWriter bodyWriter;
+    PrintWriter writer;
 
     Map<String, String> headers = new HashMap<>();
 
     OutputStream outputStream;
 
-    int status = 200;
+    ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+    int status = SC_OK;
 
     public Response(OutputStream outputStream) {
         this.outputStream = outputStream;
-        bodyWriter = new PrintWriter(outputStream);
+        writer = new PrintWriter(byteArrayOutputStream);
     }
 
     public String responseHeaders() {
@@ -55,7 +59,7 @@ public class Response implements HttpServletResponse {
 
     @Override
     public PrintWriter getWriter() throws IOException {
-        return bodyWriter;
+        return writer;
     }
 
     @Override
@@ -66,5 +70,24 @@ public class Response implements HttpServletResponse {
     @Override
     public void setContentLength(int var1) {
         headers.put("Content-Length", String.valueOf(var1));
+    }
+
+    @Override
+    public OutputStream getOutputStream() {
+        return outputStream;
+    }
+
+    @Override
+    public void sendError(int scCode, String msg) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("HTTP/1.1  ").append(scCode).append("\n");
+        try {
+            outputStream.write(sb.toString().getBytes());
+            outputStream.write(msg.getBytes());
+            outputStream.flush();
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

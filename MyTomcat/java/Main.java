@@ -1,21 +1,27 @@
 import Exceptions.IncorrectCommand;
+import http.ServletContext;
 import org.apache.commons.cli.*;
+
+import java.util.Map;
 
 public class Main {
     public static CommandLine cmd;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if (!args[0].equals("http-server")) {
             throw new IncorrectCommand("http-server [path] [options]");
         }
-
         cmd = getCmd(args);
 
         String strPort = cmd.getOptionValue("p", "80");
         int port = Integer.parseInt(strPort);
+        LoadContexts loadContexts = new LoadContexts();
+        Map<String, ServletContext> contexts = loadContexts.getServletContexts();
 
-        System.out.println(port);
-        //TODO: default path
+        for (Map.Entry<String, ServletContext> entry : contexts.entrySet()) {
+            entry.getValue().init();
+        }
+
         try {
             ServerListener serverListener = new ServerListener(port);
             serverListener.run();

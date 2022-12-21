@@ -27,17 +27,16 @@ public class Request implements HttpServletRequest {
         if (line.isEmpty())
             return;
 
-        String[] strings = line.split(" ");
-        method = strings[0];
-        path = strings[1];
+        String[] headerParts = line.split(" ");
+        method = headerParts[0];
+        path = headerParts[1];
 
-        while (true) {
+        line = in.nextLine();
+        while(!line.isBlank()) {
+            //todo: invalid headers handler
+            headerParts = line.split(": ");
+            headers.put(headerParts[0], headerParts[1]);
             line = in.nextLine();
-            if (line.isBlank()) {
-                break;
-            }
-            strings = line.split(": ");
-            headers.put(strings[0], strings[1]);
         }
     }
 

@@ -1,6 +1,7 @@
 package http;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 
 public interface HttpServletResponse {
@@ -57,4 +58,8 @@ public interface HttpServletResponse {
     void setContentType(String var1);
 
     void setContentLength(int var1);
+
+    OutputStream getOutputStream();
+
+    void sendError(int scCode, String msg);
 }
